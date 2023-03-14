@@ -2,7 +2,8 @@ import { IDiscover } from "@/api/models/IDiscover";
 import { IMovie } from "@/api/models/IMovie";
 import { discover } from "@/api/routes";
 import { MovieCard } from "@/components/MovieCard";
-import { Grid, Container, Text, Pagination } from "@nextui-org/react";
+import NavBar from "@/components/Navbar";
+import { Grid, Container, Text, Pagination, Checkbox } from "@nextui-org/react";
 import { ChangeEvent, useEffect, useState } from "react";
 
 export default function Home() {
@@ -11,14 +12,15 @@ export default function Home() {
   const [movies, setMovies] = useState<IMovie[]>([]);
   const [totalResults, setTotalResults] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
+  const [filter,setFilter] = useState<string[]>([]);
   const _logo = "";
   const _paths = [{ name: "HOME", path: "/Home" }];
 
   const getMovies = async () => {
     try {
-      const newMovies1 = await discover(pageCount);
-      const newMovies2 = await discover(pageCount + 1);
-      const newMovies3 = await discover(pageCount + 2);
+      const newMovies1 = await discover(pageCount,filter);
+      const newMovies2 = await discover(pageCount + 1,filter);
+      const newMovies3 = await discover(pageCount + 2,filter);
       const allMovies = [
         ...newMovies1.results,
         ...newMovies2.results,
@@ -35,7 +37,7 @@ export default function Home() {
 
   useEffect(() => {
     getMovies();
-  }, []);
+  }, [filter]);
 
   const onChangePage = (e: ChangeEvent<HTMLButtonElement>) => {
     setPageCount(parseInt(e.target.value));
@@ -48,10 +50,24 @@ export default function Home() {
         justifyContent: "center",
       }}
     >
+      <NavBar />
       <Grid.Container>
-        <Grid xs={1}>Form</Grid>
-        <Grid xs={5}>Boşluk</Grid>
-        <Grid xs={6}>Filter</Grid>
+        <Grid xs={12} css={{background: "White"}}>
+          <Checkbox.Group
+            label="Select cities"
+            orientation="horizontal"
+            color="secondary"
+            defaultValue={["buenos-aires"]}
+            value={filter}
+            onChange ={setFilter}
+          >
+            <Checkbox value="&include_adult=false">+18</Checkbox>
+            <Checkbox value="&include_video=false">Video</Checkbox>
+            <Checkbox value="&sort_by=revenue.asc">Revenue</Checkbox>
+            <Checkbox value="&with_watch_monetization_types=flatrate">XXX</Checkbox>
+          </Checkbox.Group>
+        </Grid>
+
         <Grid xs={12}>Form</Grid>
         <Grid xs={1}></Grid>
         <Grid
@@ -85,11 +101,11 @@ export default function Home() {
           <Pagination
             color="secondary"
             size={"xl"}
-            total={totalPages/3}
+            total={totalPages / 3}
             initialPage={pageCount}
-            onChange={(page:number)=>{
-                setPageCount(page*3);
-                getMovies();
+            onChange={(page: number) => {
+              setPageCount(page * 3);
+              getMovies();
             }}
           />
         </Grid>
